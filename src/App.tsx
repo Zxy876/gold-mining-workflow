@@ -5,6 +5,7 @@ import { FloatingActionBar } from './components/FloatingActionBar';
 import { Minimap } from './components/Minimap';
 import { Node } from './components/Node';
 import { Synapse } from './components/Synapse';
+import { ConfigPanel } from './components/ConfigPanel';
 import { NodeData, Connection } from './types';
 
 export default function App() {
@@ -25,6 +26,9 @@ export default function App() {
       y: 256,
       throughput: '2.4 GB/s',
       latency: '0.04 ms',
+      allow_architecture_change: false,
+      allow_new_dependencies: false,
+      allow_direct_apply: false,
     },
     {
       id: 'nucleus-1',
@@ -41,8 +45,44 @@ export default function App() {
     { id: 'c2', from: 'nerve-1', to: 'nucleus-1', color: '#e08efe', animated: true },
   ]);
 
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
   const handleNodeDrag = (id: string, x: number, y: number) => {
     setNodes(prev => prev.map(node => node.id === id ? { ...node, x, y } : node));
+  };
+
+  const handleNodeDoubleClick = (id: string) => {
+    const node = nodes.find(n => n.id === id);
+    if (node?.type === 'nerve') {
+      setSelectedNodeId(id);
+    }
+  };
+
+  const handleUpdateNode = (id: string, updates: Partial<NodeData>) => {
+    setNodes(prev => prev.map(node => node.id === id ? { ...node, ...updates } : node));
+  };
+
+  const handleCompile = () => {
+    const protocol = {
+      timestamp: new Date().toISOString(),
+      nodes: nodes.map(n => ({
+        id: n.id,
+        type: n.type,
+        name: n.name,
+        params: n.type === 'nerve' ? {
+          allow_architecture_change: n.allow_architecture_change,
+          allow_new_dependencies: n.allow_new_dependencies,
+          allow_direct_apply: n.allow_direct_apply,
+        } : undefined
+      })),
+      edges: connections.map(c => ({
+        id: c.id,
+        source: c.from,
+        target: c.to
+      }))
+    };
+    console.log('>>> SYNAPTIC PROTOCOL COMPILED <<<');
+    console.log(JSON.stringify(protocol, null, 2));
   };
 
   // Simulate some live data updates
@@ -60,6 +100,8 @@ export default function App() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const selectedNode = nodes.find(n => n.id === selectedNodeId);
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-on-surface font-body overflow-hidden">
@@ -100,6 +142,7 @@ export default function App() {
               key={node.id} 
               data={node} 
               onDrag={handleNodeDrag} 
+              onDoubleClick={handleNodeDoubleClick}
             />
           ))}
 
@@ -121,8 +164,16 @@ export default function App() {
             </label>
           </div>
 
+          {selectedNode && (
+            <ConfigPanel 
+              node={selectedNode} 
+              onClose={() => setSelectedNodeId(null)} 
+              onUpdate={handleUpdateNode}
+            />
+          )}
+
           <Minimap />
-          <FloatingActionBar />
+          <FloatingActionBar onCompile={handleCompile} />
         </div>
       </main>
     </div>

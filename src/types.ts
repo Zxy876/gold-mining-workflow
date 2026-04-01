@@ -10,6 +10,9 @@ export interface NodeData {
   throughput?: string;
   latency?: string;
   synapticLoad?: number;
+  allow_architecture_change?: boolean;
+  allow_new_dependencies?: boolean;
+  allow_direct_apply?: boolean;
 }
 
 export interface Connection {

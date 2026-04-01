@@ -4,9 +4,10 @@ import { NodeData } from '../types';
 interface NodeProps {
   data: NodeData;
   onDrag: (id: string, x: number, y: number) => void;
+  onDoubleClick?: (id: string) => void;
 }
 
-export const Node = ({ data, onDrag }: NodeProps) => {
+export const Node = ({ data, onDrag, onDoubleClick }: NodeProps) => {
   const getGlowClass = () => {
     switch (data.type) {
       case 'sensor': return 'node-glow-tertiary border-tertiary/40';
@@ -59,6 +60,7 @@ export const Node = ({ data, onDrag }: NodeProps) => {
       onDrag={(_, info) => {
         onDrag(data.id, data.x + info.delta.x, data.y + info.delta.y);
       }}
+      onDoubleClick={() => onDoubleClick?.(data.id)}
       initial={false}
       animate={{ x: data.x, y: data.y }}
       className={`absolute w-64 p-px rounded-xl bg-gradient-to-br from-white/10 to-transparent ${getGlowClass()} group cursor-move z-10`}

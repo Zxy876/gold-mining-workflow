@@ -21,4 +21,5 @@ export interface Connection {
   to: string;
   color?: string;
   animated?: boolean;
+  highlighted?: boolean;
 }

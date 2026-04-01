@@ -25,10 +25,21 @@ export const Synapse = ({ fromNode, toNode, connection }: SynapseProps) => {
       <path
         d={path}
         fill="none"
-        opacity="0.4"
-        stroke="#484849"
-        strokeWidth="1.5"
+        opacity={connection.highlighted ? "0.8" : "0.4"}
+        stroke={connection.highlighted ? (connection.color || "#ffd709") : "#484849"}
+        strokeWidth={connection.highlighted ? "2.5" : "1.5"}
+        className="transition-all duration-500"
       />
+      {connection.highlighted && (
+        <path
+          d={path}
+          fill="none"
+          stroke={connection.color || "#ffd709"}
+          strokeWidth="6"
+          opacity="0.2"
+          className="blur-sm"
+        />
+      )}
       {connection.animated && (
         <path
           className="action-potential-line"

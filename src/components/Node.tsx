@@ -5,9 +5,10 @@ interface NodeProps {
   data: NodeData;
   onDrag: (id: string, x: number, y: number) => void;
   onDoubleClick?: (id: string) => void;
+  onAction?: (id: string) => void;
 }
 
-export const Node = ({ data, onDrag, onDoubleClick }: NodeProps) => {
+export const Node = ({ data, onDrag, onDoubleClick, onAction }: NodeProps) => {
   const getGlowClass = () => {
     switch (data.type) {
       case 'sensor': return 'node-glow-tertiary border-tertiary/40';
@@ -79,18 +80,26 @@ export const Node = ({ data, onDrag, onDoubleClick }: NodeProps) => {
         </div>
 
         {data.type === 'sensor' && (
-          <div className="space-y-1">
-            <div className="h-1 w-full bg-surface-variant rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-tertiary" 
-                animate={{ width: `${data.potential || 0}%` }}
-                transition={{ duration: 0.5 }}
-              />
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <div className="h-1 w-full bg-surface-variant rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-tertiary" 
+                  animate={{ width: `${data.potential || 0}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+              <div className="flex justify-between text-[9px] font-label text-on-surface-variant">
+                <span>POTENTIAL</span>
+                <span>{data.potential ? (data.potential * 1.2).toFixed(1) : 0} mV</span>
+              </div>
             </div>
-            <div className="flex justify-between text-[9px] font-label text-on-surface-variant">
-              <span>POTENTIAL</span>
-              <span>{data.potential ? (data.potential * 1.2).toFixed(1) : 0} mV</span>
-            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); onAction?.(data.id); }}
+              className="w-full py-1.5 bg-tertiary/10 hover:bg-tertiary/20 border border-tertiary/30 rounded-lg text-[10px] font-headline font-bold text-tertiary transition-all active:scale-95"
+            >
+              RETRIEVE KNOWLEDGE
+            </button>
           </div>
         )}
 

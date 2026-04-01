@@ -40,9 +40,9 @@ export default function App() {
     },
   ]);
 
-  const [connections] = useState<Connection[]>([
-    { id: 'c1', from: 'sensor-1', to: 'nerve-1', color: '#ffd709', animated: true },
-    { id: 'c2', from: 'nerve-1', to: 'nucleus-1', color: '#e08efe', animated: true },
+  const [connections, setConnections] = useState<Connection[]>([
+    { id: 'c1', from: 'sensor-1', to: 'nerve-1', color: '#ffd709', animated: true, highlighted: false },
+    { id: 'c2', from: 'nerve-1', to: 'nucleus-1', color: '#e08efe', animated: true, highlighted: false },
   ]);
 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -55,6 +55,33 @@ export default function App() {
     const node = nodes.find(n => n.id === id);
     if (node?.type === 'nerve') {
       setSelectedNodeId(id);
+    }
+  };
+
+  const handleRetrieve = async (id: string) => {
+    console.log(`>>> INITIATING RETRIEVAL FROM SENSOR: ${id} <<<`);
+    try {
+      const response = await fetch('/api/retrieve?query=金矿&top_k=2');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      
+      console.log('>>> REAL API RESPONSE RECEIVED <<<');
+      console.table(data);
+
+      // Highlight outgoing edges from this sensor
+      setConnections(prev => prev.map(conn => 
+        conn.from === id ? { ...conn, highlighted: true } : conn
+      ));
+
+      // Reset highlight after 3 seconds
+      setTimeout(() => {
+        setConnections(prev => prev.map(conn => 
+          conn.from === id ? { ...conn, highlighted: false } : conn
+        ));
+      }, 3000);
+
+    } catch (error) {
+      console.error('>>> API RETRIEVAL FAILED <<<', error);
     }
   };
 
@@ -143,6 +170,7 @@ export default function App() {
               data={node} 
               onDrag={handleNodeDrag} 
               onDoubleClick={handleNodeDoubleClick}
+              onAction={handleRetrieve}
             />
           ))}
 
